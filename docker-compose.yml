@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:latest
+    container_name: redis_service
+    ports:
+      - "6379:6379"
+
+  event_logger:
+    build:
+      context: ./event_logger
+    container_name: event_logger_service
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  notification_processor:
+    build:
+      context: ./notification_processor
+    container_name: notification_processor_service
+    environment:
+      - REDIS_HOST=redis
+      - EVENT_LOGGER_API=http://event_logger:8000
+    depends_on:
+      - redis
+      - event_logger
